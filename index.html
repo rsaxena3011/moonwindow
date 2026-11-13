@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MoonWindow — Lunar Landing Site Navigator</title>
+<meta name="description" content="Pick a landing site, pick a date, and see whether the Sun will power you and Earth will answer you. Sun and Earth visibility for 8 CLPS lunar landing sites, computed with NASA JPL Horizons.">
+<style>
+  :root { --bg:#0b0e1a; --panel:#141828; --panel2:#1a1f33; --ink:#e8ecf4; --dim:#9aa3b8;
+          --gold:#f5c542; --blue:#6aa9ff; --green:#58d68d; --line:#2a3049; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  header { padding:28px 20px 8px; max-width:1100px; margin:0 auto; }
+  h1 { font-size:34px; margin:0 0 4px; letter-spacing:.5px; }
+  h1 .win { color:var(--gold); }
+  .promise { color:var(--dim); font-size:18px; margin:0 0 6px; }
+  .badge { display:inline-block; font-size:12px; border:1px solid var(--line); border-radius:999px;
+           padding:2px 10px; color:var(--dim); margin:2px 6px 2px 0; }
+  main { max-width:1100px; margin:0 auto; padding:10px 20px 40px; }
+  section { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px; margin:16px 0; }
+  h2 { margin:0 0 4px; font-size:20px; }
+  .sub { color:var(--dim); font-size:14px; margin:0 0 12px; }
+  label { font-size:14px; color:var(--dim); margin-right:6px; }
+  input[type=date], select { background:var(--panel2); color:var(--ink); border:1px solid var(--line);
+    border-radius:8px; padding:8px 10px; font-size:15px; margin:4px 8px 4px 0; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { padding:8px 8px; text-align:left; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th { color:var(--dim); font-weight:600; }
+  th.sortable { cursor:pointer; text-decoration:underline dotted; }
+  th.sortable:hover { color:var(--ink); }
+  td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  tr.hl td { background:#1e2438; }
+  .sun { color:var(--gold); } .earth { color:var(--blue); } .both { color:var(--green); }
+  .plots { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:760px){ .plots { grid-template-columns:1fr; } }
+  .plotbox { background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:12px; }
+  .plotbox h3 { margin:0 0 6px; font-size:16px; }
+  canvas.plot { width:100%; height:auto; display:block; }
+  .readout { font-size:14px; color:var(--dim); margin-top:6px; font-variant-numeric:tabular-nums; }
+  .readout b { color:var(--ink); }
+  input[type=range] { width:100%; accent-color:var(--gold); }
+  .ribbons h3 { margin:14px 0 4px; font-size:16px; }
+  .ribbon { display:flex; gap:2px; margin:3px 0 8px; align-items:center; }
+  .ribbon .rlab { width:64px; font-size:12px; color:var(--dim); flex:none; }
+  .ribbon .cell { flex:1; height:16px; border-radius:3px; background:#232842; }
+  .ribbon .cell.on-sun { background:var(--gold); }
+  .ribbon .cell.on-earth { background:var(--blue); }
+  .ribbon .cell.on-both { background:var(--green); }
+  .ribbon .daylab { flex:1; font-size:11px; color:var(--dim); text-align:center; }
+  .cards { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:10px; }
+  @media (max-width:760px){ .cards { grid-template-columns:1fr; } }
+  .card { background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:12px; }
+  .card h3 { margin:0 0 6px; font-size:16px; }
+  .card p { margin:4px 0; font-size:14px; }
+  .big { font-size:26px; font-weight:700; }
+  #map { width:100%; height:auto; display:block; border-radius:10px; cursor:pointer; }
+  .src { font-size:12px; color:var(--dim); }
+  .src a { color:var(--blue); }
+  footer { max-width:1100px; margin:0 auto; padding:0 20px 40px; color:var(--dim); font-size:13px; }
+  footer a { color:var(--blue); }
+  .warn { background:#2a2113; border:1px solid #6b5518; border-radius:10px; padding:12px 14px; font-size:14px; }
+  .loading { color:var(--dim); padding:20px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Moon<span class="win">Window</span></h1>
+  <p class="promise">Pick a landing site, pick a date, and see whether the Sun will power you and Earth will answer you.</p>
+  <span class="badge">NASA Space Apps 2026 — Lunar Landing Site Navigator</span>
+  <span class="badge">Data: NASA JPL Horizons (DE441)</span>
+  <span class="badge">Flat-horizon model</span>
+  <span class="badge">Dates: 2027 (UT)</span>
+</header>
+
+<main>
+  <section id="controls">
+    <h2>Compare landing sites</h2>
+    <p class="sub">All percentages are over the next lunar day (29.53 days) from the selected date, Sun/Earth elevation above the ideal (flat) horizon. No composite score — the metrics are shown side by side.</p>
+    <label for="date">Date (UT)</label>
+    <input type="date" id="date" min="2027-01-01" max="2027-12-31" value="2027-01-01">
+    <span class="sub" id="date-note"></span>
+    <div style="overflow-x:auto">
+    <table id="compare">
+      <thead><tr>
+        <th>Site</th><th>Mission</th>
+        <th class="num sortable" data-sort="daylight_pct" title="Click to sort">Daylight % ▲</th>
+        <th class="num sortable" data-sort="earth_pct" title="Click to sort">Earth-visible %</th>
+        <th class="num">Both-visible %</th>
+        <th class="num">Longest sunlit stretch</th>
+        <th class="num">Next sunrise</th>
+        <th class="num">Next Earthrise</th>
+        <th class="num">Earth el range</th>
+      </tr></thead>
+      <tbody><tr><td colspan="9" class="loading">Loading Horizons data…</td></tr></tbody>
+    </table>
+    </div>
+  </section>
+
+  <section id="ab">
+    <h2>A / B sky view — what the sky looks like from the ground</h2>
+    <p class="sub">Polar plot: the centre is straight overhead, the ring is the horizon. Gold is the Sun, blue is Earth. Drag the hour slider to scrub one day. Tracks are interpolated between 6-hourly Horizons samples.</p>
+    <label for="siteA">Site A</label><select id="siteA"></select>
+    <label for="siteB">Site B</label><select id="siteB"></select>
+    <div style="margin:10px 0 2px">
+      <label for="hour">Hour (UT) — <b id="hour-lab" style="color:var(--ink)">00:00</b></label>
+      <input type="range" id="hour" min="0" max="23" step="1" value="0">
+    </div>
+    <div class="plots">
+      <div class="plotbox"><h3 id="titleA">Site A</h3><canvas class="plot" id="plotA" width="460" height="460"></canvas><div class="readout" id="readA"></div></div>
+      <div class="plotbox"><h3 id="titleB">Site B</h3><canvas class="plot" id="plotB" width="460" height="460"></canvas><div class="readout" id="readB"></div></div>
+    </div>
+    <div class="ribbons" id="ribbons"></div>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section id="mapsec">
+    <h2>Where the sites are</h2>
+    <p class="sub">Equirectangular map (schematic). Click a marker to load it as Site A. Coordinates are IAU/USGS Gazetteer feature centres, except the Blue Ghost 1 landing coordinate (NASA LRO) — see sources below.</p>
+    <canvas id="map" width="1000" height="500"></canvas>
+    <p class="src" id="map-src"></p>
+  </section>
+
+  <section>
+    <h2>Data &amp; honesty</h2>
+    <div class="warn"><b>Flat-horizon model.</b> Horizons gives Sun/Earth elevation above a smooth sphere. Real crater rims and ridges block the Sun and Earth at low elevations. No terrain shadowing is used. Earth visibility is geometric line-of-sight only — no relay satellites, link budgets, or landing-safety modelling. This is an educational screening prototype, not flight-planning software.</div>
+    <p class="sub" style="margin-top:10px">All astronomical values were computed by NASA JPL's Horizons system (DE441 ephemeris) from live API queries made during the build (2026-11-13) and stored as data files in the repository — no AI generated any data value. Times are UT; Horizons uses the last known leap second as a constant for future intervals. Metrics are hourly estimates, not exact rise/set times. The generation script (<code>generate_data.py</code>) and the raw Horizons responses (<code>data/raw/</code>) are in the repository so any value can be traced and regenerated.</p>
+    <p class="src" id="sources"></p>
+  </section>
+</main>
+
+<footer>
+  <p><b>Use of Super Intelligence (AI):</b> This project answers NASA's official Space Apps Challenge 2026 problem statement, "Lunar Landing Site Navigator". The challenge idea is the organisers'; no AI was used to come up with the idea. AI-assisted tools helped draft and debug code and explore interface design; the final approach was selected, reviewed and tested by the author, who is responsible for the submitted work. All astronomical values shown were computed by NASA JPL Horizons (DE441) — no AI generated any data value. No AI-generated images are used. Moon texture: none (schematic map). This is an educational screening prototype, not flight-planning software: it estimates geometric sunlight and Earth line-of-sight, not power output, link budgets, or landing safety.</p>
+  <p>MoonWindow — built for NASA Space Apps 2026. Data: NASA JPL Horizons · Coordinates: IAU/USGS Gazetteer of Planetary Nomenclature, NASA LRO, NASA Science, ESA.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

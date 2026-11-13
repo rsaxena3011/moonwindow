@@ -1,0 +1,13 @@
+{
+  "coordinate_rule": "IAU/USGS Gazetteer of Planetary Nomenclature feature center, except where a NASA-published mission landing coordinate is used (noted per site). Planetographic, +East, -180 to 180. Altitude 0 km for all Horizons queries.",
+  "sites": [
+    {"id": "malapert-a", "name": "Malapert A", "mission": "IM-1 (Odysseus)", "lat": -80.18, "lon": -3.79, "source": "USGS Gazetteer of Planetary Nomenclature, Feature 11081 (center lat -80.18, lon -3.79)", "source_url": "https://planetarynames.wr.usgs.gov/Feature/11081"},
+    {"id": "mare-crisium", "name": "Mare Crisium / Mons Latreille", "mission": "Blue Ghost 1", "lat": 18.562, "lon": 61.81, "source": "NASA LRO/LROC landing coordinate (18.562 N, 61.810 E, -3650 m elev), via NASA/GSFC/ASU", "source_url": "https://www.lroc.asu.edu/images/1400"},
+    {"id": "mons-mouton", "name": "Mons Mouton", "mission": "IM-2 (Athena)", "lat": -84.6, "lon": 31.0, "source": "USGS Gazetteer of Planetary Nomenclature, Feature 16070 (center lat -84.6, lon 31.0)", "source_url": "https://planetarynames.wr.usgs.gov/Feature/16070"},
+    {"id": "nobile", "name": "Nobile", "mission": "Griffin-1", "lat": -85.28, "lon": 53.27, "source": "USGS Gazetteer of Planetary Nomenclature (Nobile; value corroborated by Wikipedia citing the Gazetteer and the Gazetteer mirror wenamethestars feature/4321). Note: the superseded 'Scott A' entry (Feature 13014, -85.10, 50.20) is the old designation, not the current Nobile center.", "source_url": "https://en.wikipedia.org/wiki/Nobile_(crater)"},
+    {"id": "shackleton", "name": "Shackleton", "mission": "Blue Moon Pathfinder / Endurance", "lat": -89.9, "lon": 0.0, "source": "ESA SMART-1 annotated south-pole mosaic (centered 89.9 S, 0.0 E); agrees with USGS Gazetteer and Sky & Telescope", "source_url": "https://www.esa.int/media/lunar-south-pole-mosaic-annotated"},
+    {"id": "reiner-gamma", "name": "Reiner Gamma", "mission": "IM-3 (Trinity)", "lat": 7.39, "lon": -58.96, "source": "USGS Gazetteer of Planetary Nomenclature, Feature 4987 (center lat 7.39, lon -58.96)", "source_url": "https://planetarynames.wr.usgs.gov/Feature/4987"},
+    {"id": "gruithuisen", "name": "Gruithuisen Domes (Gamma)", "mission": "Peregrine (intended) / Lunar-VISE", "lat": 36.56, "lon": -40.72, "source": "USGS Gazetteer of Planetary Nomenclature, Feature 3982, Mons Gruithuisen Gamma (center lat 36.56, lon -40.72)", "source_url": "https://planetarynames.wr.usgs.gov/Feature/3982"},
+    {"id": "schrodinger", "name": "Schrödinger Basin", "mission": "Far-side contrast case", "lat": -75.0, "lon": 132.4, "source": "NASA Science, Schrödinger Impact Basin (centered -75.0, 132.4 E)", "source_url": "https://science.nasa.gov/image-detail/20100716/"}
+  ]
+}
